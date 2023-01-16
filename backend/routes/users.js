@@ -14,7 +14,7 @@ router.get('/', async function (req, res, next) {
     const params = []
 
     if (name) {
-      const limit = 3
+      const limit = 5
       const offset = (page - 1) * limit
 
       const total = await models.User.count()
@@ -37,7 +37,7 @@ router.get('/', async function (req, res, next) {
     }
 
     if (phone) {
-      const limit = 3
+      const limit = 5
       const offset = (page - 1) * limit
 
       const total = await models.User.count()
@@ -61,7 +61,7 @@ router.get('/', async function (req, res, next) {
 
     if (!name, !phone) {
 
-      const limit = 3
+      const limit = 5
       const offset = (page - 1) * limit
 
       const total = await models.User.count()

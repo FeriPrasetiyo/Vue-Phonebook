@@ -5,6 +5,10 @@ export const useUserStore = defineStore({
     id: 'user',
     state: () => ({
         rawItems: [],
+        params: {
+            page: 1,
+            pages: 1
+        },
     }),
     getters: {
         item: (state) => {
@@ -13,13 +17,18 @@ export const useUserStore = defineStore({
     },
     actions: {
         loadItem() {
-            request.get('users', { params: { page: 1 } }).then((response) => {
-                this.rawItems = response.data.data[0].users.map(item => ({
+            request.get('users', { params: this.params }).then((response) => {
+                this.rawItems = [...(this.params.page === 1 ? [] : this.rawItems),
+                ...response.data.data[0].users.map(item => ({
                     id: item.id,
                     name: item.name,
                     phone: item.phone,
                     sent: true
-                }));
+                }))]
+                this.params = {
+                    page: response.data.data[0].page,
+                    pages: response.data.data[0].pages
+                }
             }).catch((err) => {
                 console.log(err)
             })
@@ -62,11 +71,20 @@ export const useUserStore = defineStore({
             })
         },
         updateItem(user) {
-            this.rawItems = this.rawItems.map(item => {
-                if (item.id === user.id) {
-                    return user
-                }
-                return item
+            request.put(`users/${user.id}`, { name: user.name, phone: user.phone }).then((response) => {
+                this.rawItems = this.rawItems.map(item => {
+                    if (item.id === user.id) {
+                        return {
+                            id: response.data.data.id,
+                            name: response.data.data.name,
+                            phone: response.data.data.phone,
+                            sent: true
+                        }
+                    }
+                    return item
+                })
+            }).catch((err) => {
+                console.log(err)
             })
         },
         resendItem(user) {
@@ -86,7 +104,47 @@ export const useUserStore = defineStore({
                 console.log(err)
             })
         },
-
-
+        searchItem(query) {
+            const params = {
+                ...this.params,
+                ...query
+            }
+            request.get('users', { params }).then((response) => {
+                this.rawItems = response.data.data[0].users.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    phone: item.phone,
+                    sent: true
+                }));
+                this.params = {
+                    page: response.data.data[0].page,
+                    pages: response.data.data[0].pages
+                }
+            }).catch((err) => {
+                console.log(err)
+            })
+        },
+        loadMoreItem() {
+            if (this.params.page < this.params.pages) {
+                const params = {
+                    ...this.params.pages,
+                    page: this.params.page + 1
+                }
+                request.get('users', { params: params }).then((request) => {
+                    this.params = {
+                        page: request.data.data[0].page,
+                        pages: request.data.data[0].pages
+                    }
+                    this.rawItems = [...this.rawItems, ...request.data.data[0].users.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        phone: item.phone,
+                        sent: true
+                    }))]
+                }).catch((err) => {
+                    console.log(err)
+                })
+            }
+        }
     }
 })

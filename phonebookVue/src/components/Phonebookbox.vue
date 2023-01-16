@@ -2,6 +2,7 @@
 import PhonebookList from "./PhonebookList.vue"
 import PhonebookFrom from "./PhonebookFrom.vue";
 import { useUserStore } from "../stores/user"
+import PhonebookSearch from "./PhonebookSearch.vue";
 
 const User = useUserStore()
 const vLoadUser = {
@@ -18,9 +19,14 @@ const vLoadUser = {
                 <h1>Phonebook</h1>
             </div>
             <div class="card-body">
-                <PhonebookFrom @createUser="User.addItem" />
+                <div>
+                    <PhonebookFrom @createUser="User.addItem" />
+                </div>
+                <div>
+                    <PhonebookSearch @searchUser="User.searchItem" />
+                </div>
             </div>
-            <PhonebookList v-load-user :users="User.rawItems" />
+            <PhonebookList v-load-user :users="User.rawItems" @loadMoreItem="User.loadMoreItem" />
         </div>
     </div>
 </template>
